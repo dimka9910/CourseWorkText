@@ -8,9 +8,14 @@ import re
 
 def get_args():
     parser = argparse.ArgumentParser(description='Obtain tweets from json files')
-    parser.add_argument('--data_path', '-d', metavar='STRING', default=os.path.join(os.path.curdir, 'data'),
+    parser.add_argument('--data_path', '-d', metavar='STRING',
+                        default=os.path.join(os.path.curdir, 'data/'),
                         help="Where the json files containing tweets are stored")
-    parser.add_argument('--output_path', '-o', metavar='STRING', default=os.path.join(os.path.curdir, 'tweets'),
+    parser.add_argument('--output_path', '-o', metavar='STRING', default=os.path.join(os.path.curdir, 'vk-parsed'),
+                        help="Where the output will be stored")
+    parser.add_argument('--folder_name', '-f', metavar='STRING', default=os.path.join(os.path.curdir, 'gosha-group'),
+                        help="Where the output will be stored")
+    parser.add_argument('--user_id', '-i', metavar='INTEGER', default=186704271,
                         help="Where the output will be stored")
 
     return parser.parse_args()
@@ -38,8 +43,8 @@ class Tweets(object):
 
         # Remove urls
         tweet["text"] = re.sub(r'http\S+', '', tweet["text"])  # remove urls
-        # tweet["text"] = re.sub(r'^https?:\/\/.*[\r\n]*', '', tweet["text"], flags=re.MULTILINE)
-        # tweet["text"] = re.sub(r'https?:\/\/.*[\r\n]', '', tweet["text"], flags=re.MULTILINE) # remove urls
+        tweet["text"] = re.sub(r'^https?:\/\/.*[\r\n]*', '', tweet["text"], flags=re.MULTILINE)
+        tweet["text"] = re.sub(r'https?:\/\/.*[\r\n]', '', tweet["text"], flags=re.MULTILINE)  # remove urls
 
         # Remove redundant white space
         tweet["text"] = " ".join(tweet["text"].split())
@@ -51,26 +56,27 @@ class Tweets(object):
         This function loads all the tweets in the given directory, cleans them and exports the tweets as a csv file.
         """
         # Obtain all json files in directory
-        json_files = os.listdir(self.args.data_path)
+        json_files = os.listdir(self.args.data_path + self.args.folder_name)
 
         all_tweets = []
         # Obtain all tweets in each json file
         for json_file in json_files:
             if json_file[-4:] != 'json':
                 continue
-            with open(os.path.join(self.args.data_path, json_file), 'r') as fp:
+            with open(os.path.join(self.args.data_path + self.args.folder_name, json_file), mode='r', encoding="utf-8-sig") as fp:
                 try:
-                    print("load this file: ", os.path.join(self.args.data_path, json_file))
+                    print("load this file: ", os.path.join(self.args.data_path + self.args.folder_name, json_file))
                     tweets = json.loads(fp.read())
                 except json.decoder.JSONDecodeError:
                     # It should also be able to load json files with UTF-8 BOM header
-                    tweets = json.load(codecs.open(os.path.join(self.args.data_path, json_file), 'r', 'utf-8-sig'))
-                except:
-                    print('I skip this file: ', os.path.join(self.args.data_path, json_file))
+                    tweets = json.load(codecs.open(os.path.join(self.args.data_path + self.args.folder_name, json_file), 'r', 'utf-8'))
+                except Exception as e:
+                    print(e);
+                    print('I skip this file: ', os.path.join(self.args.data_path + self.args.folder_name, json_file))
                     continue
                 for tweet in tweets:
                     # We don't want any retweets in the data set
-                    if not tweet["is_retweet"]:
+                    if tweet["from_id"] == int(self.args.user_id):
                         # Clean the tweet
                         tweet = self.clean_tweet(tweet)
                         # If the cleaned tweet contains any text, it should be added to the data set
@@ -83,7 +89,7 @@ class Tweets(object):
             os.makedirs(self.args.output_path)
 
         # Export tweets as a csv file
-        with open(os.path.join(self.args.output_path, 'tweets_after_2011.csv'), 'w') as f:
+        with open(os.path.join(self.args.output_path, self.args.folder_name + '.csv'), mode='w', encoding="utf-8-sig") as f:
             writer = csv.writer(f, lineterminator='\n')
             for tweet in all_tweets:
                 writer.writerow([tweet])
