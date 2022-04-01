@@ -1,0 +1,27 @@
+2022-04-01 19:25:30 INFO     Namespace(architecture='AWD_LSTM', data='./vk-parsed/', epochs=10, job_id='gosha-group', model_path='D:\\dimka\\PycharmProjects\\DeepLearningTextGeneration\\model/', n_tweets=10, n_words=300, train=True, use_pretrained=True)
+2022-04-01 19:25:30 INFO     Start loading data
+2022-04-01 19:25:30 INFO     The number of tweets: 12583
+11324
+1133
+126
+2022-04-01 19:25:30 INFO     Start training the model
+2022-04-01 19:25:53 INFO     Using a pretrained_model to finetune: True
+epoch     train_loss  valid_loss  accuracy  time
+0         8.961706    6.737557    0.105469  00:49
+epoch     train_loss  valid_loss  accuracy  time
+0         5.744883    4.928962    0.247210  00:56
+epoch     train_loss  valid_loss  accuracy  time
+0         5.179113    4.715616    0.239732  00:56
+1         5.045835    4.593439    0.288281  00:57
+2         4.953742    4.525388    0.290737  00:56
+3         4.879332    4.477106    0.285045  00:56
+4         4.820271    4.452909    0.288616  00:56
+5         4.767946    4.418729    0.291629  00:57
+6         4.721879    4.399920    0.289621  00:57
+7         4.680902    4.380250    0.291741  00:57
+8         4.640571    4.363228    0.293750  00:57
+9         4.598134    4.343577    0.291183  00:57
+2022-04-01 19:37:09 INFO     Start testing
+2022-04-01 19:37:10 INFO     Test loss: 4.205391
+2022-04-01 19:37:10 INFO     Test accuracy: tensor(0.3033)
+2022-04-01 19:37:11 INFO     Generating tweets
