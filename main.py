@@ -72,6 +72,84 @@ class TextGeneration:
         if not os.path.exists(self.args.model_path):
             os.makedirs(self.args.model_path)
 
+    def load_data(self):
+        """Load the data from file and append to list,
+         split it and store into dataframes"""
+        logger.info("Start loading data")
+        with open(self.args.data + self.args.job_id + '.csv', mode='r', encoding="utf-8") as file:
+            reader = csv.reader(file)
+            data = []
+            for row in reader:
+                if len(row[0]) > 1:
+                    # Check if tweet does not start with quote
+                    if not (row[0].startswith('"') or ord(row[0][0]) == 820):
+                        data.append(row[0])
+            logger.info('The number of tweets: {}'.format(len(data)))
+
+        # Split datset into set for training and for validation and testing
+        train_data, validation_test_data = train_test_split(
+            list(data),
+            test_size=0.1,
+            random_state=1
+        )
+
+        # Split validation and testing set into two sets
+        validation_data, test_data = train_test_split(
+            list(validation_test_data),
+            test_size=0.1,
+            random_state=1
+        )
+
+        self.train_df = pd.DataFrame({'tweet': train_data})
+        self.validation_df = pd.DataFrame({'tweet': validation_data})
+        self.test_df = pd.DataFrame({'tweet': test_data})
+
+        print(len(self.train_df))
+        print(len(self.validation_df))
+        print(len(self.test_df))
+
+    def train(self, epochs=1, batch_size=32):
+        """Train language model, uses two one cycle processes on first iteration"""
+
+        # Setup the databunch
+        self.data_lm = TextLMDataBunch.from_df(
+            path='data',
+            train_df=self.train_df,
+            valid_df=self.validation_df,
+            test_df=self.test_df,
+            text_cols='tweet',
+            bs=batch_size
+        )
+
+        # Check if it has to initialise the model
+        if not self.trained:
+            logger.info("Using a pretrained_model to finetune: " + str(self.args.use_pretrained))
+
+            # Select the correct architecture
+            if self.args.architecture.lower() == 'awd_lstm':
+                self.model = language_model_learner(self.data_lm, arch=AWD_LSTM,
+                                                    pretrained=self.args.use_pretrained, drop_mult=self.dropout)
+            else:
+                self.model = language_model_learner(self.data_lm, arch=Transformer,
+                                                    pretrained=self.args.use_pretrained, drop_mult=self.dropout)
+            # Finetune last layers
+            self.model.fit_one_cycle(1, 1e-2)
+            # Unfreeze whole model for training
+            self.model.unfreeze()
+            # Train whole model
+            self.model.fit_one_cycle(1, 1e-3)
+
+            self.trained = True
+
+        # Train
+        self.model.fit(epochs, lr=1e-3, wd=1e-7)
+
+    def test(self):
+        """Validates the model on the test dataset"""
+        test_metric = self.model.validate(self.data_lm.test_dl)
+        logger.info("Test loss: " + str(test_metric[0]))
+        logger.info("Test accuracy: " + str(test_metric[1]))
+
     @staticmethod
     def prettify_tweet(tweet):
         """Prettifies tweet by removing spaces around some tokens, mostly interpunction"""
