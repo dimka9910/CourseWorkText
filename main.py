@@ -30,13 +30,13 @@ def str2bool(v):
 def get_args():
     """Parse arguments"""
     parser = argparse.ArgumentParser(description='Script to generate tweets')
-    parser.add_argument('--job_id', '-j', metavar='STRING', default="gosha-group",
+    parser.add_argument('--job_id', '-j', metavar='STRING', default="dima-masha",
                         help="Job_id used for opening and saving files")
     parser.add_argument('--data', '-d', metavar='STRING', default='./vk-parsed/',
                         help="The CSV with the tweets")
     parser.add_argument('--model_path', '-mp', metavar='STRING', default=os.path.join(os.getcwd(), 'model/'),
                         help="Where the model is or should be stored")
-    parser.add_argument("--train", '-t', type=str2bool, nargs='?', const=True, default=False,
+    parser.add_argument("--train", '-t', type=str2bool, nargs='?', const=True, default=True,
                         help="Do we need to train a model?")
     parser.add_argument('--use_pretrained', '-p', metavar='BOOL', default=True,
                         help="Do we use a pretrained model?")

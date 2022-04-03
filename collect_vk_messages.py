@@ -13,9 +13,9 @@ def get_args():
                         help="Where the json files containing tweets are stored")
     parser.add_argument('--output_path', '-o', metavar='STRING', default=os.path.join(os.path.curdir, 'vk-parsed'),
                         help="Where the output will be stored")
-    parser.add_argument('--folder_name', '-f', metavar='STRING', default=os.path.join(os.path.curdir, 'gosha-group'),
+    parser.add_argument('--folder_name', '-f', metavar='STRING', default=os.path.join(os.path.curdir, 'dima-masha'),
                         help="Where the output will be stored")
-    parser.add_argument('--user_id', '-i', metavar='INTEGER', default=186704271,
+    parser.add_argument('--user_id', '-i', metavar='INTEGER', default=91351823,
                         help="Where the output will be stored")
 
     return parser.parse_args()
@@ -27,11 +27,6 @@ class Tweets(object):
 
     @staticmethod
     def clean_tweet(tweet):
-        """
-        This function cleans the tweet from its emojjitions, urls and other redundant characters
-        :param tweet: the tweet that must be cleaned
-        :return: the cleaned tweet
-        """
         # Remove emojis
         tweet["text"] = re.compile('[\U00010000-\U0010ffff]', flags=re.UNICODE).sub(r'', tweet["text"])
 
@@ -52,9 +47,6 @@ class Tweets(object):
         return tweet
 
     def collect_tweets(self):
-        """
-        This function loads all the tweets in the given directory, cleans them and exports the tweets as a csv file.
-        """
         # Obtain all json files in directory
         json_files = os.listdir(self.args.data_path + self.args.folder_name)
 
